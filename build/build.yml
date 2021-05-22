@@ -1,0 +1,81 @@
+
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  - develop
+  - master
+
+pr:
+  - develop
+
+# the build will run on a Microsoft hosted agent, using the lastest Windows VM Image
+pool:
+  vmImage: 'windows-latest'
+
+# these variables are available throughout the build file
+# just the build configuration is defined, in this case we are building Release packages
+variables:
+  buildConfiguration: 'Debug'
+
+#The build has 3 separate tasks run under 1 step
+steps:
+
+  # The first task is the dotnet command build, pointing to our csproj file
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      command: 'build'
+      arguments: '--configuration $(buildConfiguration)'
+      projects: '**/*.csproj'
+
+  # TODO: Run tests
+
+  # The second task is dotnet pack command again pointing to the csproj file
+  # The nobuild means the project will not be compiled before running pack, because its already built in above step
+  - task: DotNetCoreCLI@2
+    displayName: "dotnet pack"
+    inputs:
+      command: 'pack'
+      arguments: '--configuration $(buildConfiguration)'
+      packagesToPack: '**/*.csproj'
+      nobuild: true
+      versioningScheme: 'off'
+
+  # This will push any .nupkg files to the private artifact feed in Azure
+  # allowPackageConflicts allows us to build the same version and not throw an error when trying to push
+  # instead it just ingores the latest package unless the version changes
+  - task: NuGetCommand@2
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: 'push to internal/azure feed)'
+    inputs:
+      command: 'push'
+      feedsToUse: 'select'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: 'Feed'
+      versioningScheme: 'off'
+      allowPackageConflicts: true
+
+  # This SHOULD work but dotnet doesn't support encrypted ApiKeys, so for now we have
+  # to use the work-around alternative that immediately follows this commented out task
+  #
+  #  - task: DotNetCoreCLI@2
+  #    displayName: "push to nuget.org"
+  #    inputs:
+  #      command: 'push'
+  #      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+  #      nuGetFeedType: 'external'
+  #      publishFeedCredentials: 'NugetOrgApiKey'
+
+  - task: DotNetCoreCLI@2
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: push to nuget.org (using workaround)
+    inputs:
+      command: custom
+      custom: nuget
+      arguments: >
+        push $(Build.ArtifactStagingDirectory)\*.nupkg
+        -s https://api.nuget.org/v3/index.json
+        -k $(NugetApiKey)
