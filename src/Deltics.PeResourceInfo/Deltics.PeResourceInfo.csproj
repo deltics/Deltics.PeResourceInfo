@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <PackageVersion>0.0.1</PackageVersion>
+        <Title>PE Resource Info</Title>
+        <Authors>Deltics (Jolyon Direnko-Smith)</Authors>
+        <Description>Provides information about resources contained in a Windows PE (Portable Executable) image, read directly from a stream.  With no native Apis utilised, this package works on any .net standard supported platform.</Description>
+        <Copyright>(c)2021 Jolyon Direnko-Smith</Copyright>
+        <Company>Deltics</Company>
+        <AssemblyVersion>0.0.1</AssemblyVersion>
+        <FileVersion>0.0.1</FileVersion>
+        <PackageProjectUrl>https://github.com/deltics/Deltics.PeResourceInfo</PackageProjectUrl>
+        <PackageLicenseUrl>BSD-3-Clause-Attribution</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/deltics/Deltics.PeResourceInfo</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Deltics.PeImageInfo" Version="0.0.1" />
+    </ItemGroup>
+
+</Project>
