@@ -21,7 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Deltics.PeImageInfo\src\Deltics.PeImageInfo\Deltics.PeImageInfo.csproj" />
       <ProjectReference Include="..\Deltics.PeResourceInfo\Deltics.PeResourceInfo.csproj" />
     </ItemGroup>
 
